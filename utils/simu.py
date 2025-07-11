@@ -9,11 +9,6 @@ This script performs a simulation study comparing different conformal prediction
 for false discovery rate (FDR) control in regression settings. The simulation evaluates
 three regression methods (Gradient Boosting, Random Forest, SVM) across different
 scenarios and compares various calibration approaches for the Benjamini-Hochberg (BH) procedure.
-
-OPTIMIZATION NOTES:
-- Uses Monte Carlo sampling instead of exhaustive permutation computation
-- Vectorized operations for better performance
-- Configurable sampling parameters for speed vs accuracy trade-off
 """
 
 import numpy as np
@@ -24,7 +19,7 @@ import os
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import SVR
-from utils import gen_data, BH, quantile_function, varphi_all_permutations, pval_function, fast_varphi_estimation , compute_ranks , generate_rank_sequences,pval_pi_quantile
+from utils import gen_data, BH, quantile_function, varphi_all_permutations, pval_function , compute_ranks , generate_rank_sequences,pval_pi_quantile
 
 # Parse command line arguments for simulation parameters
 # sig_id: index for signal strength parameter (0-9, corresponding to sigma values 0.1 to 1.0)
@@ -61,7 +56,10 @@ remaining = ntest
 while remaining > 0:
     size = min(random.randint(min_batch, max_batch), remaining)
     batch_sizes.append(size)
-    index_batch.append(size+index_batch[-1]-1)
+    if len(index_batch) == 1 :
+        index_batch.append(size+index_batch[-1]-1)
+    else:
+        index_batch.append(size+index_batch[-1])
     remaining -= size
 
 # Optimization parameters
@@ -205,6 +203,7 @@ for reg_method in range(3):
 
         print(f"pvals_pi:{pvals_pi[i]}")
 
+   
 
     
     print("Calling BH with pvals...")
@@ -224,7 +223,7 @@ for reg_method in range(3):
             BH_res_fdp += (test_quantiles[i][0] <= 0) 
             BH_res_power +=(test_quantiles[i][0] > 0) 
         BH_res_fdp  = BH_res_fdp/len(BH_res)
-        BH_res_power = BH_res_power / (sum(test_quantiles[:][0] > 0) or 1)
+        BH_res_power = BH_res_power / (sum(test_quantiles[:,0] > 0) or 1)
         print(f"BH_res_fdp: {BH_res_fdp}, BH_res_power: {BH_res_power}")
     '''
     BH_res_fdp_pi = 0  
@@ -236,7 +235,7 @@ for reg_method in range(3):
             BH_res_fdp_pi += (test_quantiles[i][0] <= 0) 
             BH_res_power_pi +=(test_quantiles[i][0] > 0) 
         BH_res_fdp_pi  = BH_res_fdp_pi/len(BH_res_pi)
-        BH_res_power_pi = BH_res_power_pi / (sum(test_quantiles[:][0] > 0) or 1)
+        BH_res_power_pi = BH_res_power_pi / (sum(test_quantiles[:,0] > 0) or 1)
         print(f"BH_res_fdp: {BH_res_fdp_pi}, BH_res_power: {BH_res_power_pi}")
     
     print("Calling BH with pvals0...")
@@ -257,9 +256,9 @@ for reg_method in range(3):
     else:
         for i in BH_rel:
             BH_rel_fdp += (test_quantiles[i][1] <= 0) 
-            BH_rel_power += (test_quantiles[i][1] > 0) / (sum(test_quantiles[:][1] > 0) or 1)
+            BH_rel_power += (test_quantiles[i][1] > 0) / (sum(test_quantiles[:,1] > 0) or 1)
         BH_rel_fdp = BH_rel_fdp / len(BH_rel)
-        BH_rel_power = BH_rel_power / (sum(test_quantiles[:][1] > 0) or 1)
+        BH_rel_power = BH_rel_power / (sum(test_quantiles[:,1] > 0) or 1)
         print(f"BH_rel_fdp: {BH_rel_fdp}, BH_rel_power: {BH_rel_power}")
     '''
 
@@ -269,10 +268,10 @@ for reg_method in range(3):
         print("No selections in BH_res.")
     else:
         for i in BH_rel_pi:
-            BH_rel_fdp_pi += (test_quantiles[i][0] <= 0) 
-            BH_rel_power_pi +=(test_quantiles[i][0] > 0) 
+            BH_rel_fdp_pi += (test_quantiles[i][1] <= 0) 
+            BH_rel_power_pi +=(test_quantiles[i][1] > 0) 
         BH_rel_fdp_pi  = BH_rel_fdp_pi/len(BH_rel_pi)
-        BH_rel_power_pi = BH_rel_power_pi / (sum(test_quantiles[:][0] > 0) or 1)
+        BH_rel_power_pi = BH_rel_power_pi / (sum(test_quantiles[:,1] > 0) or 1)
         print(f"BH_rel_fdp: {BH_rel_fdp_pi}, BH_res_power: {BH_rel_power_pi}")
 
 
@@ -291,9 +290,9 @@ for reg_method in range(3):
     else:
         for i in BH_clip:
             BH_clip_fdp += (test_quantiles[i][2] <= 0) 
-            BH_clip_power += (test_quantiles[i][2] > 0) / (sum(test_quantiles[:][2] > 0) or 1)
+            BH_clip_power += (test_quantiles[i][2] > 0) 
         BH_clip_fdp = BH_clip_fdp / len(BH_clip)
-        BH_clip_power = BH_clip_power / (sum(test_quantiles[:][2] > 0) or 1)
+        BH_clip_power = BH_clip_power / (sum(test_quantiles[:,2] > 0) or 1)
         print(f"BH_clip_fdp: {BH_clip_fdp}, BH_clip_power: {BH_clip_power}")
     '''
 
@@ -303,10 +302,10 @@ for reg_method in range(3):
         print("No selections in BH_res.")
     else:
         for i in BH_clip_pi:
-            BH_clip_fdp_pi += (test_quantiles[i][0] <= 0) 
-            BH_clip_power_pi +=(test_quantiles[i][0] > 0) 
+            BH_clip_fdp_pi += (test_quantiles[i][2] <= 0) 
+            BH_clip_power_pi +=(test_quantiles[i][2] > 0) 
         BH_clip_fdp_pi  = BH_clip_fdp_pi/len(BH_clip_pi)
-        BH_clip_power_pi = BH_clip_power_pi / (sum(test_quantiles[:][0] > 0) or 1)
+        BH_clip_power_pi = BH_clip_power_pi / (sum(test_quantiles[:,2] > 0) or 1)
         print(f"BH_res_fdp: {BH_clip_fdp_pi}, BH_res_power: {BH_clip_power_pi}")
 
 
@@ -325,9 +324,9 @@ for reg_method in range(3):
     else:
         for i in BH_2clip:
             BH_2clip_fdp += (test_quantiles[i][3] <= 0) 
-            BH_2clip_power += (test_quantiles[i][3] > 0) / (sum(test_quantiles[:][3] > 0) or 1)
+            BH_2clip_power += (test_quantiles[i][3] > 0) 
         BH_2clip_fdp = BH_2clip_fdp / len(BH_2clip)
-        BH_2clip_power = BH_2clip_power / (sum(test_quantiles[:][3] > 0) or 1)
+        BH_2clip_power = BH_2clip_power / (sum(test_quantiles[:,3] > 0) or 1)
         print(f"BH_2clip_fdp: {BH_2clip_fdp}, BH_2clip_power: {BH_2clip_power}")
     '''
     BH_2clip_fdp_pi = 0  
@@ -336,30 +335,30 @@ for reg_method in range(3):
         print("No selections in BH_res.")
     else:
         for i in BH_2clip_pi:
-            BH_2clip_fdp_pi += (test_quantiles[i][0] <= 0) 
-            BH_2clip_power_pi +=(test_quantiles[i][0] > 0) 
+            BH_2clip_fdp_pi += (test_quantiles[i][3] <= 0) 
+            BH_2clip_power_pi +=(test_quantiles[i][3] > 0) 
         BH_2clip_fdp_pi  = BH_2clip_fdp_pi/len(BH_2clip_pi)
-        BH_2clip_power_pi = BH_2clip_power_pi / (sum(test_quantiles[:][0] > 0) or 1)
+
+        BH_2clip_power_pi = BH_2clip_power_pi / (sum(test_quantiles[:,3] > 0) or 1)
         print(f"BH_res_fdp: {BH_2clip_fdp_pi}, BH_res_power: {BH_2clip_power_pi}")
 
-    '''
+    
     all_res = pd.concat((all_res, 
-                         pd.DataFrame({'BH_res_fdp': [BH_res_fdp], 
-                                       'BH_res_power': [BH_res_power],
-                                       'BH_res_nsel': [len(BH_res)],
-                                       'BH_rel_fdp': [BH_rel_fdp], 
-                                       'BH_rel_power': [BH_rel_power], 
-                                       'BH_rel_nsel': [len(BH_rel)],
-                                       'BH_clip_fdp': [BH_clip_fdp], 
-                                       'BH_clip_power': [BH_clip_power], 
-                                       'BH_clip_nsel': [len(BH_clip)],
-                                       'BH_2clip_fdp': [BH_2clip_fdp], 
-                                       'BH_2clip_power': [BH_2clip_power], 
-                                       'BH_2clip_nsel': [len(BH_2clip)],
+                         pd.DataFrame({'BH_res_fdp_pi': [BH_res_fdp_pi], 
+                                       'BH_res_power_pi': [BH_res_power_pi],
+                                       'BH_res_nsel_pi': [len(BH_res_pi)],
+                                       'BH_rel_fdp_pi': [BH_rel_fdp_pi], 
+                                       'BH_rel_power_pi': [BH_rel_power_pi], 
+                                       'BH_rel_nsel_pi': [len(BH_rel_pi)],
+                                       'BH_clip_fdp_pi': [BH_clip_fdp_pi], 
+                                       'BH_clip_power_pi': [BH_clip_power_pi], 
+                                       'BH_clip_nsel_pi': [len(BH_clip_pi)],
+                                       'BH_2clip_fdp_pi': [BH_2clip_fdp_pi], 
+                                       'BH_2clip_power_pi': [BH_2clip_power_pi], 
+                                       'BH_2clip_nsel_pi': [len(BH_2clip_pi)],
                                        'q': [q], 'regressor': [reg_name],
-                                       'seed': [seed], 'sigma': [sig], 'ntest': [ntest]})))'''
+                                       'seed': [seed], 'sigma': [sig], 'ntest': [ntest]})))
 
-#print(f"\nAll results shape: {all_res.shape}")
-#print(f"Saving results to: ../results/prob_set{str(set_id)}q{str(int(q*10))}sig{str(sig_id)}nt{str(nt_id)}seed{str(seed)}.csv")
-
-#all_res.to_csv("../results/prob_set"+str(set_id)+"q"+str(int(q*10))+"sig"+str(sig_id)+"nt"+str(nt_id)+"seed"+str(seed)+".csv")
+print(f"\nAll results shape: {all_res.shape}")
+print(f"Saving results to: ../results/prob_set{str(set_id)}q{str(int(q*10))}sig{str(sig_id)}nt{str(nt_id)}seed{str(seed)}.csv")
+all_res.to_csv("../results/prob_set"+str(set_id)+"q"+str(int(q*10))+"sig"+str(sig_id)+"nt"+str(nt_id)+"seed"+str(seed)+".csv")

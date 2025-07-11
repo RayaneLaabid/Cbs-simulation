@@ -1,0 +1,4 @@
+,BH_res_fdp_pi,BH_res_power_pi,BH_res_nsel_pi,BH_rel_fdp_pi,BH_rel_power_pi,BH_rel_nsel_pi,BH_clip_fdp_pi,BH_clip_power_pi,BH_clip_nsel_pi,BH_2clip_fdp_pi,BH_2clip_power_pi,BH_2clip_nsel_pi,q,regressor,seed,sigma,ntest
+0,0.0,0.7,14,0.0,0.7,14,0.0,0.85,17,0.0,0.85,17,0.1,gbr,79,0.1,1000
+0,0.0,0.7894736842105263,15,0.0,0.7894736842105263,15,0.0,0.7894736842105263,15,0.0,0.7894736842105263,15,0.1,rf,79,0.1,1000
+0,0.0,0.75,15,0.0,0.75,15,0.0,0.95,19,0.0,0.95,19,0.1,svm,79,0.1,1000

@@ -1,4 +1,0 @@
-,BH_res_fdp,BH_res_power,BH_res_nsel,BH_rel_fdp,BH_rel_power,BH_rel_nsel,BH_clip_fdp,BH_clip_power,BH_clip_nsel,BH_2clip_fdp,BH_2clip_power,BH_2clip_nsel,q,regressor,seed,sigma,ntest
-0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,gbr,53,0.4,500
-0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,rf,53,0.4,500
-0,0,0,0,0,0,0,0,0,0,0,0,0,0.1,svm,53,0.4,500

@@ -244,3 +244,8 @@ def pval_pi_quantile(score_size , batch_size, rank, level ):
         p_val += comb(i + q_level -2 , q_level-1)* comb(score_size + batch_size-i-q_level+1, batch_size - q_level)
     
     return p_val/M
+
+lol = [[1,1],[1,2],[1,3],[1,4]]
+lol = np.array(lol)
+print(lol[:,1])
+print(sum(lol[1][:]>0) or 1)
